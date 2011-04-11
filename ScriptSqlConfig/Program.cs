@@ -708,28 +708,28 @@ GO
                 using (var conn = GetConnection(server, "master"))
                 {
                     var srv = new Server(new ServerConnection(conn));
-                    var singleDB = new Database();
+                    var singleDB = new Database(srv,_database);
                     if (!string.IsNullOrEmpty(_database))
                     {
-                        //if (db.IsAccessible)
-                        //{
-                        //    Log.Info("Scripting Database: " + db.Name);
-                        //    var outputDirectory = Path.Combine(databasesDirectory, db.Name);
-                        //    try
-                        //    {
-                        //        ScriptDatabase(server, db.Name, outputDirectory);
-                        //    }
-                        //    catch (Exception e)
-                        //    {
-                        //        Log.ErrorFormat("Failed to Script Database: {0}", db.Name);
-                        //        if (_verbose)
-                        //            Log.Error(e);
-                        //    }
-                        //}
-                        //else
-                        //{
-                        //    Log.InfoFormat("Skipping Database:{0}", db.Name);
-                        //}
+                        if (singleDB.IsAccessible)
+                        {
+                            Log.Info("Scripting Database: " + singleDB.Name);
+                            var outputDirectory = Path.Combine(databasesDirectory, singleDB.Name);
+                            try
+                            {
+                                ScriptDatabase(server, singleDB.Name, outputDirectory);
+                            }
+                            catch (Exception e)
+                            {
+                                Log.ErrorFormat("Failed to Script Database: {0}", singleDB.Name);
+                                if (_verbose)
+                                    Log.Error(e);
+                            }
+                        }
+                        else
+                        {
+                            Log.InfoFormat("Skipping Database:{0}", singleDB.Name);
+                        }
                     }
                     else
                     {
