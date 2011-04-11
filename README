@@ -1,0 +1,57 @@
+SQLScriptConfig
+This is a fork of Bill Graziano's ScriptSQLConfig tool from http://scriptsqlconfig.codeplex.com/
+
+Project Description
+Script SQL Server configuration information in a format suitable for DR purposes or checking into a source control system.
+
+The following instance level objects are scripted:
+Logins
+Jobs
+Linked servers
+
+The following instance level objects and current values are written to a file:
+Properties
+Options
+
+The following database objects are scripted:
+Tables
+Stored procedures
+User-defined data types
+Views
+Triggers
+Table types
+User-defined functions
+
+ScriptSqlConfig.EXE (2.0.2.0)
+
+    This application generates scripts and configuration information
+    for many SQL Server options and database objects.
+
+    Required Parameters:
+    ----------------------------------------------------------------
+
+    /server ServerName
+    /dir    OutputDirectory
+
+    Optional Parameters:
+    ----------------------------------------------------------------
+
+    /v          (Verbose Output)
+    /nodb       (Don't script databases)
+    /noinstance (Don't script instance information)
+    /user       (SQL Server user name.  It will use trusted
+                 security unless this option is specified.)
+    /password   (SQL Server password.  If /user is specified then
+                 /password is required.)
+    /?          (Display this help)
+
+    Sample Usage
+    ----------------------------------------------------------------
+
+    ScriptSqlConfig.EXE /server Srv1\Instance /dir 'C:\MyDir'
+
+    Notes
+    ----------------------------------------------------------------
+    1. If you have spaces in the path name, enclose it in quotes.
+    2. It will use trusted authentication unless both the /username
+       and /password are specified.
