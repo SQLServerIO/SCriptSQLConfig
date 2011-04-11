@@ -68,7 +68,7 @@ namespace ScriptSqlConfig
         private static bool _jobsdrmode;
         private static string _server = "";
         private static string _directory = "";
-        //private static string _database = "";
+        private static string _database = "";
         private static bool _showHelp;
         private static string _userName = "";
         private static string _password = "";
@@ -88,7 +88,7 @@ namespace ScriptSqlConfig
                             {"drmode", z => { _jobsdrmode = true; }},
                             {"noinstance", z => { _scriptInstance = false; }},
                             {"d|dir|directory=", z => _directory = z},
-          //                  {"database=", z => _database = z}, // not implemented yet
+                            {"database=", z => _database = z}, 
                             {"u|user=", z => _userName = z},
                             {"p|password=", z => _password = z},
                             {"h|?|help", z => { _showHelp = true; }}
@@ -125,7 +125,11 @@ ScriptSqlConfig.EXE (" + v +
     
     /v          (Verbose Output)
     /nodb       (Don't script databases)
+    /database   (Specific database to script)
     /noinstance (Don't script instance information)
+    /drmode     (Generate single file for jobs with preappended 
+                 information and creates jobs disabled for DR
+                 server)
     /user       (SQL Server user name.  It will use trusted
                  security unless this option is specified.)
     /password   (SQL Server password.  If /user is specified then
@@ -183,23 +187,7 @@ ScriptSqlConfig.EXE (" + v +
             {
                 using (var conn = GetConnection(server, "master"))
                 {
-                    //var srv = new Server(new ServerConnection(conn));
-                    //string instanceDirectory = Path.Combine(directory, "Instance");
                     var instanceDirectory = directory;
-                    //var d = new DirectoryInfo(instanceDirectory);
-                    //if (d.Exists)
-                    //{
-                    //    try
-                    //    {
-                    //        d.Delete(true);
-                    //    }
-                    //    catch (Exception e)
-                    //    {
-                    //        Log.ErrorFormat("Failed To Delete Folder: {0}", d.Name);
-                    //        if (_verbose)
-                    //            Log.Error(e);
-                    //    }
-                    //}
 
                     try
                     {
@@ -720,26 +708,52 @@ GO
                 using (var conn = GetConnection(server, "master"))
                 {
                     var srv = new Server(new ServerConnection(conn));
-                    foreach (Database db in srv.Databases)
+                    var singleDB = new Database();
+                    if (!string.IsNullOrEmpty(_database))
                     {
-                        if (db.IsAccessible)
+                        //if (db.IsAccessible)
+                        //{
+                        //    Log.Info("Scripting Database: " + db.Name);
+                        //    var outputDirectory = Path.Combine(databasesDirectory, db.Name);
+                        //    try
+                        //    {
+                        //        ScriptDatabase(server, db.Name, outputDirectory);
+                        //    }
+                        //    catch (Exception e)
+                        //    {
+                        //        Log.ErrorFormat("Failed to Script Database: {0}", db.Name);
+                        //        if (_verbose)
+                        //            Log.Error(e);
+                        //    }
+                        //}
+                        //else
+                        //{
+                        //    Log.InfoFormat("Skipping Database:{0}", db.Name);
+                        //}
+                    }
+                    else
+                    {
+                        foreach (Database db in srv.Databases)
                         {
-                            Log.Info("Scripting Database: " + db.Name);
-                            var outputDirectory = Path.Combine(databasesDirectory, db.Name);
-                            try
+                            if (db.IsAccessible)
                             {
-                                ScriptDatabase(server, db.Name, outputDirectory);
+                                Log.Info("Scripting Database: " + db.Name);
+                                var outputDirectory = Path.Combine(databasesDirectory, db.Name);
+                                try
+                                {
+                                    ScriptDatabase(server, db.Name, outputDirectory);
+                                }
+                                catch (Exception e)
+                                {
+                                    Log.ErrorFormat("Failed to Script Database: {0}", db.Name);
+                                    if (_verbose)
+                                        Log.Error(e);
+                                }
                             }
-                            catch (Exception e)
+                            else
                             {
-                                Log.ErrorFormat("Failed to Script Database: {0}", db.Name);
-                                if (_verbose)
-                                    Log.Error(e);
+                                Log.InfoFormat("Skipping Database:{0}", db.Name);
                             }
-                        }
-                        else
-                        {
-                            Log.InfoFormat("Skipping Database:{0}",db.Name);
                         }
                     }
                 }
@@ -1066,7 +1080,7 @@ GO
         private static void RemoveSqlFiles(string directory)
         {
             var dir = new DirectoryInfo(directory);
-            if (!dir.Exists) return;
+            if (dir.Exists)
             foreach (var f in dir.GetFiles("*.sql"))
                 try
                 {
